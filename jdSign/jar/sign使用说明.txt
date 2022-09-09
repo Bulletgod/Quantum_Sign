@@ -1,0 +1,4 @@
+该服务需要java runtime 环境（jre）
+1. 使用压缩解压工具打开 unidbg-server-1.0.0.jar
+2. 修改target\unidbg-server-1.0.0.jar\BOOT-INF\classes\application.properties    调整服务端口，默认8014 可不调整
+3. cmd 执行 java -jar unidbg-server-1.0.0.jar

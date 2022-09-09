@@ -1,0 +1,11 @@
+{
+    "name": "quantum",
+    "version": "1.0.0",
+    "description": "quantum scripts",
+    "author": "asupc <17919100150@qq.com>",
+    "private": true,
+    "dependencies": {
+        "crypto-js": "^4.1.1",
+        "got": "^11.8.2"
+    }
+}
