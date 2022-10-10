@@ -36,12 +36,55 @@ echo -e "${red}开始自动化安装,请双手离开键盘鼠标${plain}"
 # apt install git -y || yum install git -y > /dev/null 
 echo -e "${green}正在拉取Quantum_Sign主程序等文件,体积100多M，请耐心等待···${plain}"
 mkdir -p  /root/Quantum_Sign && cd /root/Quantum_Sign
-wget https://github.com/Bulletgod/Quantum_Sign/releases/download/v1.0.1/Quantum_Sign.zip /root/Quantum_Sign/Quantum_Sign.zip
+echo -e "${green}请选择机器类型···${plain}"
+read -p "国外机器请按回车继续，国内机器请输入1 [回车默认国外机器]: " China && printf "\n"
+	if [ "$China" = "1" ] ;then
+    echo -e "${green}你的机器为国内机器，下载时间将会很漫长···${plain}"
+    wget http://180.76.137.96:999/down/zPOvpRkBprnH && mv zPOvpRkBprnH Quantum_Sign.zip    
+else 
+    wget https://github.com/Bulletgod/Quantum_Sign/releases/download/v1.0.1/Quantum_Sign.zip Quantum_Sign.zip
+
+fi
+
 echo -e "${green}下载完成，正在解压缩···${plain}"
 unzip Quantum_Sign.zip > /dev/null 2>&1 
 echo -e "${green}解压缩完成，删除压缩包···${plain}"
 rm  -f Quantum_Sign.zip > /dev/null 2>&1 
 echo -e "${green}删除压缩包完成，开始安装docker镜像···${plain}"
+
+
+#read -p "请输入Quantum_Sign主程序希望使用的端口号: " portinfo && printf "\n"
+
+#修改主程序配置文件 ，端口
+
+cat > /root/Quantum_Sign/WskeyConvert/appsettings.json << EOF
+{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  },
+  "AllowedHosts": "*",
+  //服务监听端口
+  "HostPort": 8899,
+  // sign 服务地址
+  "SignBaseUrl": "http://172.17.0.1:8014"
+}
+
+EOF
+
+#修改端口
+
+
+read -p "请输入Quantum_Sign主程序希望使用的端口号[回车键默认 8899]: " portinfo && printf "\n"
+	if [ ! -n "$portinfo" ];then
+    sed -i "10c \ \"HostPort\": \"8899\"," /root/Quantum_Sign/WskeyConvert/appsettings.json
+else
+    sed -i "10c \ \"HostPort\": \"${portinfo}\"," /root/Quantum_Sign/WskeyConvert/appsettings.json
+fi
+
+
 
 #安装docker镜像
 echo -e  "${green}开始拉取dotnet/sdk镜像文件，镜像大约650兆大，请耐心等待...${plain}"
@@ -71,10 +114,26 @@ echo -e  "${green}jdSign重启完成...${plain}"
 docker ps
 echo -e  "${green}查看docker运行情况...${plain}"
 
-echo -e "${green}安装重启完毕,quantum修改转换地址：http://IP:8015 端口可以在/root/Quantum_Sign/WskeyConvert/appsettings.json下自行修改" 
-echo -e "${green}脚本执行完毕，祝你早日炸鸡....." 
+#放行防火墙端口
+echo -e  "${green}开启服务需的安全组端口...${plain}"
+firewall-cmd --zone=public --add-port=8014/tcp --permanent
+firewall-cmd --zone=public --add-port=${portinfo}/tcp --permanent
+firewall-cmd --reload
 
+
+echo -e "
+———————————————————————————————————————————————————————————————————————————————————
+
+${green}安装重启完毕,添加量子变量
+        变量名称：WskeyConvertService
+        变量值：http://IP:${portinfo}/api/open/ConvertWskey  
+                                                  脚本执行完毕，祝你早日炸鸡.....${plain}
+———————————————————————————————————————————————————————————————————————————————————
+" 
 }
+
+
+
 
 
 #删除容器
